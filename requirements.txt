@@ -132,6 +132,7 @@ python-json-logger==4.1.0
 pytz==2026.3.post1
 # pywin32==312
 # pywinpty==3.0.5
+pywin32==312; sys_platform == "win32"
 PyYAML==6.0.3
 pyzmq==27.1.0
 referencing==0.37.0
