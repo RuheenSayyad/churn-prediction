@@ -1,8 +1,9 @@
+
+import os
 import json
 import subprocess
 import sys
 from pathlib import Path
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 LIFECYCLE_REPORT = PROJECT_ROOT / "reports" / "lifecycle_report.json"
@@ -12,14 +13,19 @@ DEPLOY_SCRIPT = PROJECT_ROOT / "deployment" / "deploy_production.py"
 
 def load_lifecycle_report():
     if not LIFECYCLE_REPORT.exists():
-        raise FileNotFoundError(f"Lifecycle report not found: {LIFECYCLE_REPORT}")
+        raise FileNotFoundError(
+            f"Lifecycle report not found: {LIFECYCLE_REPORT}"
+        )
 
     with LIFECYCLE_REPORT.open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def run_script(script_path):
-    result = subprocess.run([sys.executable, str(script_path)], cwd=PROJECT_ROOT)
+    result = subprocess.run(
+        [sys.executable, str(script_path)],
+        cwd=PROJECT_ROOT
+    )
     return result.returncode == 0
 
 
@@ -50,6 +56,13 @@ def main():
         return False
 
     print("[SUCCESS] Deployment artifacts prepared.")
+
+    # Skip live deployment only when explicitly enabled in CI.
+    if os.getenv("SKIP_LIVE_DEPLOYMENT", "").lower() == "true":
+        print("[INFO] Live deployment skipped in CI.")
+        print("[INFO] Docker/Kubernetes deployment was not executed.")
+        return True
+
     print("[INFO] Starting Production deployment...")
 
     if not run_script(DEPLOY_SCRIPT):
@@ -61,4 +74,8 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() else 1)
+    try:
+        sys.exit(0 if main() else 1)
+    except Exception as exc:
+        print(f"[ERROR] Deployment stage failed: {exc}")
+        sys.exit(1)

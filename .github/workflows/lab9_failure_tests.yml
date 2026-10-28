@@ -10,6 +10,7 @@ jobs:
 
     env:
       MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+      SKIP_LIVE_DEPLOYMENT: "true"
 
     steps:
       - name: Checkout repository
